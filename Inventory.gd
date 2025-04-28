@@ -4,6 +4,10 @@ extends Node
 # Signal emitted when inventory changes, UI can connect to this
 signal inventory_changed
 
+@export var weapon_node_path: NodePath #path to weapon node so we can load Weapons resource into it
+
+@export var equipment_slots: Array[InventorySlot] #
+
 # Main inventory properties
 @export var inventory_size: int = 20  # Total number of slots
 var slots: Array = []  # Will hold our inventory slots
@@ -20,6 +24,9 @@ func initialize_inventory() -> void:
 		# Each "slot" is a dictionary containing item and quantity
 		slots.append({"item": null, "quantity": 0})
 	
+	#create empty equipment slots (later on we dont want these to be cleared)
+	for i in range(equipment_slots.size()):
+		slots.append({"item": null, "quantity": 0})
 	# Inform UI or other connected systems that inventory has changed
 	emit_signal("inventory_changed")
 
@@ -33,6 +40,20 @@ func add_item(item: Item, quantity: int = 1) -> Dictionary:
 	var remaining_quantity = quantity
 	var result = {"success": false, "reason": "", "remaining": quantity}
 	
+	# Step 1: Try equipment slots first if item is equipment
+	if item.is_equipment:
+		print("its equipment")
+		var remaining = quantity
+		
+		for i in range(equipment_slots.size()):
+			var slot = equipment_slots[i]
+			
+			if slot.item != null:
+				continue
+				
+			slot.item = item.duplicate_item()
+			remaining -= 1
+		
 	# If item is stackable, try to add to existing stacks first
 	if item.stackable and quantity > 0:
 		# First pass: Try to fill existing stacks
