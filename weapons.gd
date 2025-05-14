@@ -1,5 +1,5 @@
 class_name Weapons 
-extends Resource
+extends Item
 
 @export var name : StringName
 

@@ -11,9 +11,6 @@ extends Resource
 @export var max_stack_size: int = 1
 @export var item_scene: PackedScene = null  # For 3D representation when dropped in world
 
-# Optional properties for items with special effects
-@export var damage: int = 0
-@export var healing: int = 0
 
 # Constructor to easily create items in code
 func _init(p_id: String = "", p_name: String = "", p_desc: String = "", p_icon: Texture2D = null, 
@@ -32,14 +29,4 @@ func _init(p_id: String = "", p_name: String = "", p_desc: String = "", p_icon: 
 func duplicate_item() -> Item:
 	# Creates a new instance with the same properties
 	var new_item = Item.new(id, item_name, description, icon, stackable, max_stack_size, item_scene, is_equipment)
-	new_item.damage = damage
-	new_item.healing = healing
 	return new_item
-
-# Method to use the item (to be overridden by specific item types)
-func use(player) -> bool:
-	# Base implementation, return true if item was used
-	if healing > 0:
-		player.heal(healing)
-		return true
-	return false
