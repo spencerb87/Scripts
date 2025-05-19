@@ -2,6 +2,7 @@
 
 extends Node3D
 
+@onready var inventory_ui: InventoryUI = $"../../../../InventoryUI"
 @export var WEAPON_TYPE : Weapons
 
 var can_shoot : bool = true
@@ -67,7 +68,7 @@ func _process(delta):
 		
 	
 func attempt_shoot():
-	if current_ammo > 0 and can_shoot:
+	if current_ammo > 0 and can_shoot and !inventory_ui.visible:
 		shoot()
 		current_ammo -= 1
 		can_shoot = false

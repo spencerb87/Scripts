@@ -9,10 +9,14 @@ enum SlotType {WEAPON, HELMET, ARMOR, THROWABLE, MELEE, GENERAL}
 @onready var mouse_over: Panel = $MouseOver
 @onready var item_description: Label = $MouseOver/ItemDescription
 @onready var item_name_label: Label = $MouseOver/ItemNameLabel
+var is_dragging = false  # Are we currently dragging this slot?
+static var currently_dragged_slot = null  # Which slot is being dragged (shared between all slots)
+
 
 var item = null
-var hovercolor = Color(0.0, 1.0, 0.0, 0.196)
-var clickcolor = Color(1.0, 1.0, 0.0, 0.196)
+var hovercolor = Color(0.0, 1.0, 0.0, 0.196) #color when u hover a slot
+var clickcolor = Color(1.0, 1.0, 0.0, 0.196) #color when u click a slot
+var can_drop_color = Color(0.0, 0.5, 1.0, 0.3)  # Blue highlight for valid drop targets
 
 func _ready() -> void:
 	highlight.color = hovercolor
@@ -56,3 +60,4 @@ func _on_gui_input(event: InputEvent) -> void:
 		highlight.color = clickcolor
 	else:
 		highlight.color = hovercolor
+	
