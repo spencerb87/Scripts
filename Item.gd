@@ -8,6 +8,11 @@ extends Resource
 @export var icon: Texture2D = null
 @export var stackable: bool = false
 @export var is_equipment: bool = false
+@export var is_weapon: bool = false
+@export var is_helmet: bool = false
+@export var is_armor: bool = false
+@export var is_melee: bool = false
+@export var is_throwable: bool = false
 @export var max_stack_size: int = 1
 @export var item_scene: PackedScene = null  # For 3D representation when dropped in world
 
