@@ -31,7 +31,8 @@ func initialize_inventory():
 	for i in range(equipment_slots.size()):
 		var slot = equipment_slots[i]
 		# Connect signals for the slots
-		slot.gui_input.connect(_on_slot_gui_input.bind(i))
+		if not slot.gui_input.is_connected(_on_slot_gui_input.bind(i)):
+			slot.gui_input.connect(_on_slot_gui_input.bind(i))
 				
 		equipment_data[i] = {"item": null, "quantity": 0}
 

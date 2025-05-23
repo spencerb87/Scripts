@@ -36,19 +36,41 @@ var idle_sway_rotation_strength
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	load_weapon()
 	current_ammo = WEAPON_TYPE.ammo_count
 	fire_audio_player = AudioStreamPlayer3D.new()
 	reload_audio_player = AudioStreamPlayer3D.new()
 	
 	add_child(fire_audio_player)
 	add_child(reload_audio_player)
+	load_weapon()
 	
 func _input(event):
 	if event is InputEventMouseMotion:
 		mouse_movement = event.relative
 
 func load_weapon():
+	print("Starting load_weapon()")
+	print("WEAPON_TYPE: ", WEAPON_TYPE)
+	print("weapon_mesh node: ", weapon_mesh)
+	print("WEAPON_TYPE.mesh: ", WEAPON_TYPE.mesh)
+	
+	if weapon_mesh == null:
+		print("ERROR: weapon_mesh is null! Check your node setup.")
+		return
+		
+	if WEAPON_TYPE == null:
+		print("ERROR: WEAPON_TYPE is null! Make sure it's assigned in the inspector.")
+		return
+		
+	if WEAPON_TYPE.mesh == null:
+		print("ERROR: WEAPON_TYPE.mesh is null! Make sure the mesh is assigned in your weapon resource.")
+		return
+	
+	# Now try to assign the mesh
+	weapon_mesh.mesh = WEAPON_TYPE.mesh
+	print("Mesh assigned successfully!")
+	
+	# Rest of your load_weapon code
 	weapon_mesh.mesh = WEAPON_TYPE.mesh
 	position = WEAPON_TYPE.position
 	rotation_degrees = WEAPON_TYPE.rotation
@@ -57,6 +79,7 @@ func load_weapon():
 	idle_sway_adjustment = WEAPON_TYPE.idle_sway_adjustment
 	idle_sway_rotation_strength = WEAPON_TYPE.idle_sway_rotation_strength
 	random_sway_amount = WEAPON_TYPE.random_sway_amount
+	print("load_weapon() completed!")
 	
 func _process(delta):
 	if Input.is_action_just_pressed("shoot") and can_shoot and !WEAPON_TYPE.is_automatic:
@@ -175,16 +198,17 @@ func sway_weapon(delta):
 	rotation_degrees.x = lerp(rotation_degrees.x, WEAPON_TYPE.rotation.x + (mouse_movement.x * WEAPON_TYPE.sway_amount_rotation + (random_sway_y * idle_sway_rotation_strength)) * delta, WEAPON_TYPE.sway_speed_rotation)
 	rotation_degrees.y = lerp(rotation_degrees.y, WEAPON_TYPE.rotation.y + (mouse_movement.y * WEAPON_TYPE.sway_amount_rotation + (random_sway_x * idle_sway_rotation_strength)) * delta, WEAPON_TYPE.sway_speed_rotation)
 	
-#func get_sway_noise() -> float:
-	#var player_position : Vector3 = Vector3(0,0,0)
+func get_sway_noise() -> float:
+	var player_position : Vector3 = Vector3(0,0,0)
 	#only access global variable when in game to avoid constant errors
-	#if not Engine.is_editor_hint():
-		#player_position = global_position
+	if not Engine.is_editor_hint():
+		player_position = global_position
 		
-	#var noise_location : float = sway_noise.noise.get_noise_2d(player_position.x, player_position.y)
-	#return noise_location
+	var noise_location : float = sway_noise.noise.get_noise_2d(player_position.x, player_position.y)
+	return noise_location
 	
 	
 	
 func _physics_process(delta: float) -> void:
 	sway_weapon(delta)
+	pass
