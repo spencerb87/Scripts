@@ -10,6 +10,7 @@ extends Node3D
 @onready var weapon_mesh: MeshInstance3D = $WeaponMesh
 @onready var audio_player: AudioStreamPlayer3D = $AudioStreamPlayer3D
 @onready var inventory_ui: InventoryUI = $"../../../../InventoryUI"
+@onready var inventory: Inventory = $"../../../../Inventory"
 
 # Internal variables to track weapon state
 var current_ammo: int
@@ -49,10 +50,15 @@ func _process(delta: float) -> void:
 	if Input.is_action_pressed("shoot") and weapon_resource.is_automatic and !inventory_ui.visible:  # You'll need to define "shoot" in Input Map
 		shoot()
 
-func _input(InputEvent):
+func _input(event):
 	# Handle player input for shooting and reloading
 	if not weapon_resource:
 		return
+	
+	if event.is_action_pressed("hotbar1"):
+		equip_from_slot(0)
+	elif event.is_action_pressed("hotbar2"):
+		equip_from_slot(1)
 	
 	# Stop shooting when left mouse button is released (for automatic weapons)
 	if Input.is_action_just_pressed("shoot") and !weapon_resource.is_automatic and !inventory_ui.visible:  # You'll need to define "shoot" in Input Map
@@ -118,3 +124,14 @@ func get_max_ammo() -> int:
 	if weapon_resource:
 		return weapon_resource.max_ammo
 	return 0
+
+func equip_from_slot(slot_index: int):
+	if inventory.equipment_data.has(slot_index):
+		var slot_data = inventory.equipment_data[slot_index]
+		
+		if slot_data["item"] != null and slot_data["item"] is Weapons:
+			weapon_resource = slot_data["item"]
+			setup_weapon()
+			print("yippeeee you changed your weapon")
+		
+	
