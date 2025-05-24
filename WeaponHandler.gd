@@ -44,26 +44,22 @@ func setup_weapon():
 	rotation_degrees = weapon_resource.rotation
 	scale = weapon_resource.scale
 
-func _input(event):
+func _process(delta: float) -> void:
+	#simple logic to shoot full auto is weapon marked is_automatic
+	if Input.is_action_pressed("shoot") and weapon_resource.is_automatic and !inventory_ui.visible:  # You'll need to define "shoot" in Input Map
+		shoot()
+
+func _input(InputEvent):
 	# Handle player input for shooting and reloading
 	if not weapon_resource:
 		return
 	
-	# Shoot when left mouse button is pressed
-	if event.is_action_pressed("shoot") and !inventory_ui.visible:  # You'll need to define "shoot" in Input Map
-		if weapon_resource.is_automatic:
-			# For automatic weapons, start continuous shooting
-			start_shooting()
-		else:
-			# For single-shot weapons, shoot once
-			shoot()
-	
 	# Stop shooting when left mouse button is released (for automatic weapons)
-	if event.is_action_released("shoot"):
-		stop_shooting()
+	if Input.is_action_just_pressed("shoot") and !weapon_resource.is_automatic and !inventory_ui.visible:  # You'll need to define "shoot" in Input Map
+		shoot()
 	
 	# Reload when R key is pressed
-	if event.is_action_pressed("reload"):  # You'll need to define "reload" in Input Map
+	if Input.is_action_just_pressed("reload"):  # You'll need to define "reload" in Input Map
 		reload()
 
 func shoot():
@@ -90,22 +86,6 @@ func shoot():
 	
 	# Here you would add your bullet spawning, muzzle flash, etc.
 	# For now, we're just handling the basic shooting mechanics
-
-func start_shooting():
-	# For automatic weapons - keep shooting while button is held
-	if weapon_resource.is_automatic:
-		shoot_continuously()
-
-func shoot_continuously():
-	# Keep shooting until we stop or run out of ammo
-	while Input.is_action_pressed("shoot") and current_ammo > 0 and not is_reloading:
-		shoot()
-		await get_tree().create_timer(weapon_resource.fire_rate).timeout
-
-func stop_shooting():
-	# This function exists for automatic weapons
-	# The shooting will naturally stop when the input is released
-	pass
 
 func reload():
 	# Check if we need to reload
