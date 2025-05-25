@@ -80,17 +80,35 @@ func is_slot_compatible(slot: InventorySlot, item: Item) -> bool:
 		_:
 			return false
 
+func _input(event: InputEvent) -> void:
+	# Handle global mouse release for drag and drop
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and !event.pressed and dragging:
+		# Find which slot the mouse is over when released
+		var target_slot = find_slot_under_mouse()
+		if target_slot != -1:
+			end_drag(target_slot)
+		else:
+			cancel_drag()
+
+func find_slot_under_mouse() -> int:
+	var mouse_pos = get_viewport().get_mouse_position()
+	
+	for i in range(equipment_slots.size()):
+		var slot = equipment_slots[i]
+		var slot_rect = Rect2(slot.global_position, slot.size)
+		
+		if slot_rect.has_point(mouse_pos):
+			return i
+	return -1
+
 # New functions for drag and drop
 func _on_slot_gui_input(event: InputEvent, slot_index: int) -> void:
 	# Detect left mouse button actions
-	if event is InputEventMouseButton:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		var slot_data = equipment_data[slot_index]
-		
-		# Start dragging on mouse button down
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			# Only start drag if there's an item in the slot
-			if slot_data["item"] != null:
-				begin_drag(slot_index)
+		# Only start drag if there's an item in the slot
+		if slot_data["item"] != null:
+			begin_drag(slot_index)
 		
 		# Drop item on mouse button release
 		elif event.button_index == MOUSE_BUTTON_LEFT and !event.pressed and dragging:
@@ -177,6 +195,13 @@ func end_drag(target_slot_index: int) -> void:
 					emit_signal("item_changed", target_slot_index, drag_item, drag_quantity)
 	
 	# Reset drag variables
+	dragging = false
+	drag_item = null
+	drag_quantity = 0
+	drag_origin_slot = -1
+
+func cancel_drag() -> void:
+	drag_icon.visible = false
 	dragging = false
 	drag_item = null
 	drag_quantity = 0
