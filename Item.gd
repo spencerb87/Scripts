@@ -14,7 +14,7 @@ extends Resource
 @export var is_melee: bool = false
 @export var is_throwable: bool = false
 @export var max_stack_size: int = 1
-@export var item_scene: PackedScene = null  # For 3D representation when dropped in world
+@export var item_scene_path: String = ""  # For 3D representation when dropped in world
 
 
 # Constructor to easily create items in code
