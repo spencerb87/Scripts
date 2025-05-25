@@ -3,6 +3,7 @@ extends Node
 
 signal item_changed(slot_index, item, quantity)
 
+@onready var player: CharacterBody3D = $".."
 @onready var equipment_node: Control = $"../InventoryUI/Equipment"
 var equipment_slots = []
 var equipment_data = {}
@@ -88,7 +89,48 @@ func _input(event: InputEvent) -> void:
 		if target_slot != -1:
 			end_drag(target_slot)
 		else:
-			cancel_drag()
+			drop_item_to_world()
+
+func drop_item_to_world():
+	#check if we have an item to drop and if it has a scene path
+	if not drag_item or drag_item.item_scene_path == "":
+		cancel_drag()
+		return
+	
+	var item_scene = load(drag_item.item_scene_path)
+	if not item_scene:
+		print("could not load item scene: " + drag_item.item_scene_path)
+		cancel_drag()
+		return
+	
+	var item_instance = item_scene.instantiate()
+	
+	get_tree().current_scene.add_child(item_instance)
+	
+	if player:
+		var drop_position = player.global_position + player.global_transform.basis.z * -2.0
+		drop_position.y += 1.0
+		item_instance.global_position = drop_position
+		
+	var item_pickup_node: Area3D = null
+	for child in item_instance.get_children():
+		if child is Area3D and child.has_method("interact"):
+			item_pickup_node = child
+			break
+	
+	if item_pickup_node:
+		item_pickup_node.item_resource = drag_item
+		item_pickup_node.quantity = drag_quantity
+	
+	var origin_slot_data = equipment_data[drag_origin_slot]
+	origin_slot_data["item"] = null
+	origin_slot_data["quantity"] = 0
+	emit_signal("item_changed", drag_origin_slot, null, 0)
+	
+	print("dropped " + drag_item.item_name)
+	cancel_drag()
+	
+	
 
 func find_slot_under_mouse() -> int:
 	var mouse_pos = get_viewport().get_mouse_position()
