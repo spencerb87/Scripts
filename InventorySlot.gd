@@ -1,7 +1,7 @@
 class_name InventorySlot
 extends Panel
 
-enum SlotType {WEAPON, HELMET, ARMOR, THROWABLE, MELEE, GENERAL}
+enum SlotType {WEAPON, HELMET, ARMOR, THROWABLE, MELEE, GENERAL, BACKPACK, KEY}
 @export var slot_type: SlotType = SlotType.GENERAL
 @onready var item_icon: TextureRect = $ItemIcon
 @onready var highlight: ColorRect = $Highlight

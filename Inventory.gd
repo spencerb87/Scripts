@@ -44,7 +44,7 @@ func add_item(item: Item, quantity: int) -> Dictionary:
 		var slot = equipment_slots[slot_index]
 		
 		# If this slot has the same item, increase quantity
-		if slot_data["item"] == item and item.stackable:
+		if slot_data["item"] == item and item.stackable and slot_data["quantity"] < item.max_stack_size:
 			slot_data["quantity"] += quantity
 			emit_signal("item_changed", slot_index, item, slot_data["quantity"])
 			return {"success": true, "remaining": 0}
@@ -76,6 +76,10 @@ func is_slot_compatible(slot: InventorySlot, item: Item) -> bool:
 			return item.is_melee
 		InventorySlot.SlotType.THROWABLE:
 			return item.is_throwable
+		InventorySlot.SlotType.BACKPACK:
+			return item.is_backpack
+		InventorySlot.SlotType.KEY:
+			return item.is_key
 		InventorySlot.SlotType.GENERAL:
 			return true
 		_:
@@ -97,6 +101,9 @@ func drop_item_to_world():
 		cancel_drag()
 		return
 	
+	# Create a duplicate of the item resource preserves everything about the current weapon
+	var duplicated_item = drag_item.duplicate(true)
+	
 	var item_scene = load(drag_item.item_scene_path)
 	if not item_scene:
 		print("could not load item scene: " + drag_item.item_scene_path)
@@ -108,9 +115,11 @@ func drop_item_to_world():
 	get_tree().current_scene.add_child(item_instance)
 	
 	if player:
-		var drop_position = player.global_position + player.global_transform.basis.z * -2.0
+		var forward_direction = player.global_transform.basis.z * -1.0
+		var drop_position = player.global_position + player.global_transform.basis.z * -1.0
 		drop_position.y += 1.0
 		item_instance.global_position = drop_position
+		item_instance.linear_velocity = forward_direction * 3.0
 		
 	var item_pickup_node: Area3D = null
 	for child in item_instance.get_children():
@@ -119,7 +128,7 @@ func drop_item_to_world():
 			break
 	
 	if item_pickup_node:
-		item_pickup_node.item_resource = drag_item
+		item_pickup_node.item_resource = duplicated_item
 		item_pickup_node.quantity = drag_quantity
 	
 	var origin_slot_data = equipment_data[drag_origin_slot]
