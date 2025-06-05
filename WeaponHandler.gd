@@ -11,6 +11,10 @@ extends Node3D
 @onready var audio_player: AudioStreamPlayer3D = $AudioStreamPlayer3D
 @onready var inventory_ui: InventoryUI = $"../../../../InventoryUI"
 @onready var inventory: Inventory = $"../../../../Inventory"
+@onready var weapon_rig: Node3D = $".."
+@onready var player: CharacterBody3D = $"../../../.."
+@onready var grenadespawn: Marker3D = $"../grenadespawn"
+
 
 # Internal variables to track weapon state
 var current_ammo: int
@@ -59,6 +63,10 @@ func _input(event):
 		equip_from_slot(0)
 	elif event.is_action_pressed("hotbar2"):
 		equip_from_slot(1)
+	
+	if Input.is_action_just_pressed("throwable"):
+		throw_grenade()
+	
 	
 	# Stop shooting when left mouse button is released (for automatic weapons)
 	if Input.is_action_just_pressed("shoot") and !weapon_resource.is_automatic and !inventory_ui.visible:  # You'll need to define "shoot" in Input Map
@@ -135,3 +143,61 @@ func equip_from_slot(slot_index: int):
 			print("yippeeee you changed your weapon")
 		
 	
+func throw_grenade():
+	var throwable_to_use = null
+	var slot_to_use = -1
+	
+	#only array slots 5 and 6 allow throwables
+	if inventory.equipment_data[5]["item"] != null:
+		throwable_to_use = inventory.equipment_data[5]["item"]
+		print("slot 5 has item")
+		slot_to_use = 5
+	elif inventory.equipment_data[6]["item"] != null:
+		throwable_to_use = inventory.equipment_data[6]["item"]
+		print("slot 6 has item")
+		slot_to_use = 6
+	else:
+		return
+		
+	spawn_and_throw_grenade(throwable_to_use, slot_to_use)
+		
+		
+func spawn_and_throw_grenade(throwable: Throwable, slot_index: int):
+	var grenade_scene = load(throwable.item_scene_path)
+	var grenade_instance = grenade_scene.instantiate()
+	
+	get_tree().current_scene.add_child(grenade_instance)
+	
+	var throw_pos = grenadespawn.global_position
+	grenade_instance.global_position = throw_pos
+	
+	var throw_direction = grenadespawn.global_transform.basis.z * -1.0
+	grenade_instance.linear_velocity = throw_direction * throwable.throw_force
+	
+	# adding a lil rando spin to the throwable
+	var random_rotation = Vector3(
+		randf_range(-10.0, 10.0),  # Random X rotation
+		randf_range(-10.0, 10.0),  # Random Y rotation  
+		randf_range(-10.0, 10.0)   # Random Z rotation
+	)
+	grenade_instance.angular_velocity = random_rotation
+	
+	start_grenade_timer(grenade_instance, throwable)
+	remove_throwable_from_slot(slot_index)
+	
+func start_grenade_timer(grenade: RigidBody3D, throwable: Throwable):
+	await get_tree().create_timer(throwable.fuse_time).timeout
+	explode_grenade(grenade, throwable)
+	
+func explode_grenade(grenade: RigidBody3D, throwable: Throwable):
+	print("BOOM!")
+	# Add explosion logic here
+	grenade.queue_free()
+
+func remove_throwable_from_slot(slot_index: int):
+	var slot_data = inventory.equipment_data[slot_index]
+	slot_data["quantity"] -= 1
+	if slot_data["quantity"] <= 0:
+		slot_data["item"] = null
+		slot_data["quantity"] = 0
+	inventory.emit_signal("item_changed", slot_index, slot_data["item"], slot_data["quantity"])

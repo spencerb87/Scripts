@@ -31,8 +31,8 @@ func _input(event):
 	if event.is_action_pressed("exit"):
 		get_tree().quit()
 		
-	if Input.is_action_just_pressed("throwable"):
-		throw_selected_item()
+	#if Input.is_action_just_pressed("throwable"):
+		#throw_selected_item()
 		
 func _unhandled_input(event):
 	_mouse_input = event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
@@ -203,38 +203,38 @@ func pick_up_item(item: Item, quantity: int = 1) -> bool:
 	else:
 		return false
 		
-func throw_selected_item():
-	var throwable_to_use = null
-	var slot_to_use = -1
-	
-	if inventory.equipment_data[5]["item"] != null:
-		throwable_to_use = inventory.equipment_data[5]["item"]
-		slot_to_use = 5
-		
-	elif inventory.equipment_data[6]["item"] != null:
-		throwable_to_use = inventory.equipment_data[6]["item"]
-		slot_to_use = 6
-		
-	if throwable_to_use == null:
-		return
-		
-	var grenade_scene = load(throwable_to_use.item_scene_path)
-	var grenade_instance = grenade_scene.instantiate()
-	
-	get_tree().current_scene.add_child(grenade_instance)
-	
-	var throw_position = global_position + global_transform.basis.z * -1.0
-	throw_position.y += 1.5
-	grenade_instance.global_position = throw_position
-	
-	grenade_instance.setup_grenade(throwable_to_use)
-	var throw_direction = global_transform.basis.z * -1.0
-	grenade_instance.throw_grenade(throw_direction, throwable_to_use.throw_force)
-	
-	var slot_data = inventory.equipment_data[slot_to_use]
-	slot_data["quantity"] -= 1
-	if slot_data["quantity"] <= 0:
-		slot_data["item"] = null
-		slot_data["quantity"] = 0
-	
-	inventory.emit_signal("item_changed", slot_to_use, slot_data["item"], slot_data["quantity"])
+#func throw_selected_item():
+	#var throwable_to_use = null
+	#var slot_to_use = -1
+	#
+	#if inventory.equipment_data[5]["item"] != null:
+		#throwable_to_use = inventory.equipment_data[5]["item"]
+		#slot_to_use = 5
+		#
+	#elif inventory.equipment_data[6]["item"] != null:
+		#throwable_to_use = inventory.equipment_data[6]["item"]
+		#slot_to_use = 6
+		#
+	#if throwable_to_use == null:
+		#return
+		#
+	#var grenade_scene = load(throwable_to_use.item_scene_path)
+	#var grenade_instance = grenade_scene.instantiate()
+	#
+	#get_tree().current_scene.add_child(grenade_instance)
+	#
+	#var throw_position = global_position + global_transform.basis.z * -1.0
+	#throw_position.y += 1.5
+	#grenade_instance.global_position = throw_position
+	#
+	#grenade_instance.setup_grenade(throwable_to_use)
+	#var throw_direction = global_transform.basis.z * -1.0
+	#grenade_instance.throw_grenade(throw_direction, throwable_to_use.throw_force)
+	#
+	#var slot_data = inventory.equipment_data[slot_to_use]
+	#slot_data["quantity"] -= 1
+	#if slot_data["quantity"] <= 0:
+		#slot_data["item"] = null
+		#slot_data["quantity"] = 0
+	#
+	#inventory.emit_signal("item_changed", slot_to_use, slot_data["item"], slot_data["quantity"])
