@@ -257,3 +257,18 @@ func cancel_drag() -> void:
 	drag_item = null
 	drag_quantity = 0
 	drag_origin_slot = -1
+
+func get_equipped_backpack() -> Backpack:
+	if equipment_data[7]["item"] != null:
+		var backpack = equipment_data[7]["item"] as Backpack
+		backpack.setup_inventory()
+		return backpack
+		
+	return null
+
+func add_item_to_backpack(item: Item, quantity: int) -> Dictionary:
+	var backpack = get_equipped_backpack()
+	if backpack:
+		return backpack.add_item_to_backpack(item, quantity)
+	else:
+		return {"success": false, "remaining": quantity}
